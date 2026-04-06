@@ -1,13 +1,8 @@
-# Файл docker-compose.yml
-
-# Версия docker-compose:
-version: '3'
-
-# Перечень volume:
 volumes:
   pg_data:
+  static:
+  media:
 
-# Перечень контейнеров:
 services:
   # Имя и описание первого контейнера; имя выбирает разработчик. 
   # Это контейнер с базой данных:
@@ -24,6 +19,9 @@ services:
     # Из какого Dockerfile собирать образ для этого контейнера:
     build: ./backend/
     env_file: .env
+    volumes:
+      - static:/backend_static/static/
+      - media:/app/media
     # Какие контейнеры нужно запустить до старта этого контейнера:
     depends_on:
       - postgres
@@ -31,3 +29,20 @@ services:
   frontend:
     env_file: .env
     build: ./frontend/
+    volumes:
+      - static:/app/build
+  # Имя контейнера с nginx gateway:
+  gateway:
+    build: ./nginx/
+    ports:
+      - "80:80"
+    volumes:
+      - static:/static
+      - media:/media
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      default:
+        aliases:
+          - kittygram.local
