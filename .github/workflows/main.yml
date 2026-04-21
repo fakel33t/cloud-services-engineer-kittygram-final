@@ -74,6 +74,20 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: |
+          cat > .env << 'EOF'
+          POSTGRES_DB=kittygram
+          POSTGRES_USER=kittygram_user
+          POSTGRES_PASSWORD=kittygram_password
+          DB_HOST=postgres
+          DB_PORT=5432
+          SECRET_KEY=my_super_secret_key
+          DEBUG=False
+          ALLOWED_HOSTS=127.0.0.1,localhost,158.160.240.129
+          EOF
+
       - name: Copy docker-compose.yml via ssh
         uses: appleboy/scp-action@master
         with:
@@ -82,6 +96,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: "docker-compose.production.yml"
           target: "cloud-services-engineer-kittygram-final"
+
       - name: Copy .env via ssh
         uses: appleboy/scp-action@master
         with:
@@ -90,6 +105,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: ".env"
           target: "cloud-services-engineer-kittygram-final"
+
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
